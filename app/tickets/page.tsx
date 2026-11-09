@@ -5,17 +5,31 @@ import Link from "next/link";
 
 export const instant = false;
 
-export default async function TicketPage(){
+export default async function TicketPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ q?: string}>;
+}) {
     const userId = (await cookies()).get("userId")?.value;
+    const { q } = await searchParams;
     if(!userId){
         redirect("/login");
     }
-    const tickets = await prisma.ticket.findMany({
-        where: {authorId: Number(userId)},
-    });
+    let tickets;
+    if(q){
+        const requete = `SELECT * FROM "Ticket" WHERE title LIKE '%${q}%'`;
+        console.log(requete);
+        tickets = await prisma.$queryRawUnsafe<{ id: number, title: string, status: string}[]>(requete);
+    }else{
+        tickets = await prisma.ticket.findMany({ where: { authorId: Number(userId) }});
+    }
     return (
         <main>
             <h1>Mes tickets</h1>
+            <form>
+                <input type="text" name="q" placeholder="Recherche" defaultValue={q ?? ""}/>
+                <button type="submit">Chercher</button>
+            </form>
             <ul>
                 {tickets.map((ticket) => (
                     <li key={ticket.id}>
