@@ -11,7 +11,7 @@ export default async function TicketPage(){
         redirect("/login");
     }
     const tickets = await prisma.ticket.findMany({
-        where: {authorId: Number(userId)}
+        where: {authorId: Number(userId)},
     });
     return (
         <main>

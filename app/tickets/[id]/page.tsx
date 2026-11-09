@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
-
+import { addComment } from "./actions";
 
 export const instant = false;
 
@@ -15,6 +15,11 @@ export default async function TicketDetailPage({
         redirect("/login");
     }
     const { id } = await params;
+
+    const ticketId = Number(id);
+    if (Number.isNaN(ticketId)) {
+        notFound();
+    }
 
     const ticket = await prisma.ticket.findUnique({
         where: { id: Number(id) },
@@ -35,10 +40,15 @@ export default async function TicketDetailPage({
             <ul>
                 {ticket.comments.map((comment) => (
                     <li key={comment.id}>
-                        {comment.author.email} : {comment.content}
+                        {comment.author.email} : <span dangerouslySetInnerHTML={{ __html: comment.content }}/>
                     </li>
                 ))}
             </ul>
+            <form action={addComment}>
+                <input type="hidden" name="ticketId" value={ticket.id}></input>
+                <textarea name="content" placeholder="Votre commentaire"></textarea>
+                <button type="submit">Commenter</button>
+            </form>
         </main>
     )
 }
