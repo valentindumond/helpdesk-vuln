@@ -22,7 +22,7 @@ export default async function TicketDetailPage({
     }
 
     const ticket = await prisma.ticket.findUnique({
-        where: { id: Number(id) },
+        where: { id:ticketId },
         include: { author: true, comments: {include: {author: true}}},
     })
 
